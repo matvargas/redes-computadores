@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 	if(LOG) printf("[log] received %u bytes\n", total);
 	if(LOG) printf("[msg] Game started, word with %u chars \n", buf[1]);
 	printf("%u\n", buf[1]);
-	
+
 	int endGame = (int)buf[1];
 
 	char c;
@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
 	total = 0;
 
 	while(1) {
+
 		buf[0] = (unsigned char)HINT_FLAG;
 		buf[1] = c;
 
@@ -87,13 +88,25 @@ int main(int argc, char **argv) {
 
 		if(LOG) printf("[log] %d chars remaining \n", endGame);
 
-		if (endGame == 0)
-			break;
-
 		total = 0;
 		memset(buf, 0, 2);
+
+		if (endGame <= 0)
+			break;
+
+		
 		scanf(" %c", &c);
 	}
+
+	char endBuffer[BUFSZ];
+	memset(endBuffer, 0, BUFSZ);
+
+	count = recv(s, endBuffer + total, BUFSZ, 0);
+	total += count;	
+
+	printf("%u \n", endBuffer[0]);
+	if(LOG) printf("[log] flag: %u End Game \n", endBuffer[0]);
+	
 	
 	close(s);
 

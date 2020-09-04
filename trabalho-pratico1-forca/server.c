@@ -11,17 +11,18 @@
 #define BUFSZ 1024
 #define IP_VERSION "v4"
 #define HANGMAN "pneumoultramicroscopicossilicovulcanoconiotico"
+// #define HANGMAN "teste"
 #define LOG 1
 #define HINT_FLAG 2
 #define OCC_FLAG 3
+#define END_FLAG 4
+#define SINGLE_TURN 1
 
 typedef struct occurrences {
     int occCount;
     int occIndexes[50];
 } OccStruct;
 ;
-
-
 
 void usage(int argc, char **argv) {
     //Sugestão de porta: 51511
@@ -117,10 +118,12 @@ int main(int argc, char **argv) {
 
         if(LOG) printf("[msg] Game started \n");
 
+        int endGame = sizeof(HANGMAN) - 1;
+        unsigned total;
+
         while(1){
 
-            unsigned long gameCount = sizeof(HANGMAN) - 1;
-            unsigned total = 0;
+            total = 0;
             OccStruct occ;
 
             count = recv(csock, buf + total, 2, 0);
@@ -130,6 +133,8 @@ int main(int argc, char **argv) {
             if(LOG) printf("[log] char received: %u \n", buf[1]);
 
             occ = testCharOccurrences((char)buf[1]);
+
+            endGame -= (int)occ.occCount;
 
             int occBuffSize = 2 + occ.occCount;
             if(LOG) printf("[log] size of occurence buffer %d positions \n", occBuffSize);
@@ -153,9 +158,24 @@ int main(int argc, char **argv) {
 
             if(LOG) printf("[log] flag sent: %u \n", occBuff[0]);
             if(LOG) printf("[log] sent %lu bytes\n", sizeof(occBuff));
+
+            if (endGame <= 0)
+			    break;
         
         }
+
+        unsigned char endBuffer[1];
+        memset(endBuffer, 0, 1);
+        endBuffer[0] = (unsigned)END_FLAG;
+        total = 0;
+        count = send(csock, endBuffer, strlen(endBuffer) + 1, 0);
+        total += count;
+
+        if(LOG) printf("[log] flag sent: %u \n", endBuffer[0]);
+        if(LOG) printf("[log] sent %lu bytes\n", sizeof(endBuffer));
+
         close(csock);
+        if(SINGLE_TURN) break;
     }
 
     exit(EXIT_SUCCESS);
