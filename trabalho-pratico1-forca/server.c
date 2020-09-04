@@ -9,12 +9,40 @@
 #include <sys/types.h>
 
 #define BUFSZ 1024
-#define IP_VERSION "v6"
+#define IP_VERSION "v4"
+#define HANGMAN "pneumoultramicroscopicossilicovulcanoconiotico"
 
 void usage(int argc, char **argv) {
     //Sugestão de porta: 51511
     printf("usage: %s <server port>\n", argv[0]);
     exit(EXIT_FAILURE);
+}
+
+char *convertIntToByte(int n)
+{
+   int c, d, count;
+   char *pointer;
+   
+   count = 0;
+   pointer = (char*)malloc(8+1);
+   
+   if (pointer == NULL)
+      exit(EXIT_FAILURE);
+     
+   for (c = 7 ; c >= 0 ; c--)
+   {
+      d = n >> c;
+     
+      if (d & 1)
+         *(pointer+count) = 1 + '0';
+      else
+         *(pointer+count) = 0 + '0';
+     
+      count++;
+   }
+   *(pointer+count) = '\0';
+   
+   return pointer;
 }
 
 int main(int argc, char **argv) {
@@ -54,6 +82,7 @@ int main(int argc, char **argv) {
     printf("bound to %s, waiting connections\n", addrstr);
 
     while (1) {
+
         struct sockaddr_storage cstorage;
         struct sockaddr *caddr = (struct sockaddr *)(&cstorage);
         socklen_t caddrlen = sizeof(cstorage);
