@@ -18,33 +18,6 @@ void usage(int argc, char **argv) {
     exit(EXIT_FAILURE);
 }
 
-char *convertIntToByte(int n)
-{
-   int c, d, count;
-   char *pointer;
-   
-   count = 0;
-   pointer = (char*)malloc(8+1);
-   
-   if (pointer == NULL)
-      exit(EXIT_FAILURE);
-     
-   for (c = 7 ; c >= 0 ; c--)
-   {
-      d = n >> c;
-     
-      if (d & 1)
-         *(pointer+count) = 1 + '0';
-      else
-         *(pointer+count) = 0 + '0';
-     
-      count++;
-   }
-   *(pointer+count) = '\0';
-   
-   return pointer;
-}
-
 int main(int argc, char **argv) {
 
     if (argc < 2) {
@@ -96,16 +69,23 @@ int main(int argc, char **argv) {
         addrtostr(caddr, caddrstr, BUFSZ);
         printf("[log] connection from %s\n", caddrstr);
 
-        char buf[BUFSZ];
-        memset(buf, 0, BUFSZ);
-        size_t count = recv(csock, buf, BUFSZ - 1, 0);
-        printf("[msg] %s, %d bytes: %s\n", caddrstr, (int)count, buf);
+        unsigned char buf[2];
+        memset(buf, 0, 2);
+        
+        unsigned char startGame = 1;
+        unsigned char wordLen = sizeof(HANGMAN) - 1;
+        buf[0] = startGame;
+        buf[1] = wordLen;
 
-        sprintf(buf, "remote endpoint: %.1000s\n", caddrstr);
-        count = send(csock, buf, strlen(buf) + 1, 0);
-        if (count != strlen(buf) + 1) {
+        size_t count = send(csock, buf, 2, 0);
+        if (count != 2) {
             logexit("send");
         }
+
+        
+        count = recv(csock, buf, BUFSZ - 1, 0);
+        printf("[msg] %s, %d bytes: %s\n", caddrstr, (int)count, buf);
+
         close(csock);
     }
 

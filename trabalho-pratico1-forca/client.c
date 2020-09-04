@@ -18,50 +18,59 @@ void usage(int argc, char **argv) {
 #define BUFSZ 1024
 
 int main(int argc, char **argv) {
-	if (argc < 3)
+	if (argc < 3) {
 		usage(argc, argv);
+	}
 
 	struct sockaddr_storage storage;
-	if (0 != addrparse(argv[1], argv[2], &storage))
+	if (0 != addrparse(argv[1], argv[2], &storage)) {
 		usage(argc, argv);
+	}
 
 	int s;
 	s = socket(storage.ss_family, SOCK_STREAM, 0);
-	if (s == -1)
+	if (s == -1) {
 		logexit("socket");
-	
+	}
 	struct sockaddr *addr = (struct sockaddr *)(&storage);
-	if (0 != connect(s, addr, sizeof(storage)))
+	if (0 != connect(s, addr, sizeof(storage))) {
 		logexit("connect");
-	
+	}
+
 	char addrstr[BUFSZ];
 	addrtostr(addr, addrstr, BUFSZ);
 
 	printf("connected to %s\n", addrstr);
 
-	char buf[BUFSZ];
-	memset(buf, 0, BUFSZ);
-	printf("mensagem> ");
-	fgets(buf, BUFSZ-1, stdin);
-	size_t count = send(s, buf, strlen(buf)+1, 0);
-	if (count != strlen(buf)+1) {
-		logexit("send");
-	}
+	// char buf[BUFSZ];
+	// memset(buf, 0, BUFSZ);
+	// printf("mensagem> ");
+	// fgets(buf, BUFSZ-1, stdin);
 
-	memset(buf, 0, BUFSZ);
+	// char *p;
+	// if(p=strchr(buf, '\n')){
+	// 	*p = 0;
+	// } else {
+	// 	scanf("%*[^\n]");scanf("%*c");
+	// }
+
+	// size_t count = send(s, buf, strlen(buf)+1, 0);
+	// if (count != strlen(buf)+1) {
+	// 	logexit("send");
+	// }
+
+	char buf[2];
+	memset(buf, 0, 2);
 	unsigned total = 0;
-	while(1) {
-		count = recv(s, buf + total, BUFSZ - total, 0);
-		if (count == 0) {
-			// Connection terminated.
-			break;
-		}
+	
+		size_t count = recv(s, buf + total, 2, 0);
 		total += count;
-	}
+	
 	close(s);
 
 	printf("received %u bytes\n", total);
-	puts(buf);
+	for(int i = 0; i < sizeof(buf); i++)
+		printf("%u", buf[i]);
 
 	exit(EXIT_SUCCESS);
 }
