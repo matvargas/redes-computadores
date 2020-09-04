@@ -9,13 +9,14 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#define BUFSZ 1024
+#define LOG 1
+#define HINT_FLAG 2
 void usage(int argc, char **argv) {
 	printf("usage: %s <server IP> <server port>\n", argv[0]);
 	printf("example: %s 127.0.0.1 51511\n", argv[0]);
 	exit(EXIT_FAILURE);
 }
-
-#define BUFSZ 1024
 
 int main(int argc, char **argv) {
 	if (argc < 3) {
@@ -63,14 +64,23 @@ int main(int argc, char **argv) {
 	memset(buf, 0, 2);
 	unsigned total = 0;
 	
-		size_t count = recv(s, buf + total, 2, 0);
-		total += count;
-	
-	close(s);
+	size_t count = recv(s, buf + total, 2, 0);
+	total += count;
 
-	printf("received %u bytes\n", total);
-	for(int i = 0; i < sizeof(buf); i++)
-		printf("%u", buf[i]);
+	if(LOG) printf("[log] received %u bytes\n", total);
+	if(LOG) printf("[msg] Game started, word with %u chars \n", buf[1]);
+	
+	char c;
+	scanf("%c", &c);
+	
+	buf[0] = (unsigned char)HINT_FLAG;
+	buf[1] = c;
+
+	if(LOG) printf("[log] preparing to send %lu bytes\n", sizeof(buf));
+	if(LOG) printf("[log] preparing to send Flag: %u, Char: %c \n", buf[0], buf[1]);
+	count = send(s, buf, 2, 0);
+
+	close(s);
 
 	exit(EXIT_SUCCESS);
 }
