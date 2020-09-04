@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
             logexit("send");
         }
 
-        if(LOG) printf("[msg] Game started");
+        if(LOG) printf("[msg] Game started \n");
 
         unsigned long gameCount = sizeof(HANGMAN) - 1;
         unsigned total = 0;
@@ -149,12 +149,9 @@ int main(int argc, char **argv) {
         count = send(csock, occBuff, strlen(occBuff) + 1, 0);
         total += count;
 
-        for(int i = 0; occBuff[i]; i++)
-            printf("%u", occBuff[i]);
-        
-
-        if(LOG) printf("[log] sent %lu bytes\n", sizeof(occBuff));
         if(LOG) printf("[log] flag sent: %u \n", occBuff[0]);
+        if(LOG) printf("[log] sent %lu bytes\n", sizeof(occBuff));
+        
         
         close(csock);
     }
