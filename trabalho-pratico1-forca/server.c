@@ -13,6 +13,7 @@
 #define HANGMAN "pneumoultramicroscopicossilicovulcanoconiotico"
 #define LOG 1
 #define HINT_FLAG 2
+#define OCC_FLAG 3
 
 typedef struct occurrences {
     int occCount;
@@ -32,7 +33,6 @@ OccStruct testCharOccurrences (char charToTest){
 
     OccStruct occ;
 
-    int a[sizeof(HANGMAN) - 1];
     memset(occ.occIndexes, -1, 50);
     occ.occCount = 0; 
 
@@ -121,23 +121,40 @@ int main(int argc, char **argv) {
         unsigned total = 0;
         OccStruct occ;
 
-        // while (gameCount > 0) {
-            count = recv(csock, buf + total, 2, 0);
-            total += count;
+        count = recv(csock, buf + total, 2, 0);
+        total += count;
 
-            if(LOG) printf("[log] received %u bytes\n", total);
-            if(LOG) printf("[log] char received: %c \n", buf[1]);
+        if(LOG) printf("[log] received %u bytes\n", total);
+        if(LOG) printf("[log] char received: %u \n", buf[1]);
 
+        occ = testCharOccurrences((char)buf[1]);
 
-            occ = testCharOccurrences(buf[1]);
-            
-            printf("teste");
-            printf("%d , %d", occ.occCount, occ.occIndexes);
+        int occBuffSize = 2 + occ.occCount;
+        if(LOG) printf("[log] size of occurence buffer %d positions \n", occBuffSize);
 
+        unsigned char occBuff[occBuffSize];
 
-            memset(buf, 0, 2);
-            total = 0;
-        // }
+        occBuff[0] = (unsigned char)OCC_FLAG;
+        if(LOG) printf("[log] inserting %u OCC_FLAG with %lu bytes \n", occBuff[0], sizeof(occBuff[0]));
+
+        occBuff[1] = (unsigned char)occ.occCount;
+        if(LOG) printf("[log] inserting %u occurrences with %lu bytes \n", occBuff[1], sizeof(occBuff[1]));
+
+        for(int i = 0; i < occ.occCount; i++) {
+            occBuff[i + 2] = (unsigned char)occ.occIndexes[i];
+            if(LOG) printf("[log] inserting index %u with %lu bytes \n", occBuff[i + 2], sizeof(occBuff[i + 2]));
+        }
+
+        total = 0;
+        count = send(csock, occBuff, strlen(occBuff) + 1, 0);
+        total += count;
+
+        for(int i = 0; occBuff[i]; i++)
+            printf("%u", occBuff[i]);
+        
+
+        if(LOG) printf("[log] sent %lu bytes\n", sizeof(occBuff));
+        if(LOG) printf("[log] flag sent: %u \n", occBuff[0]);
         
         close(csock);
     }
