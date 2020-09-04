@@ -9,20 +9,23 @@
 #include <sys/types.h>
 
 #define BUFSZ 1024
+#define IP_VERSION "v6"
 
 void usage(int argc, char **argv) {
-    printf("usage: %s <v4|v6> <server port>\n", argv[0]);
-    printf("example: %s v4 51511\n", argv[0]);
+    //Sugestão de porta: 51511
+    printf("usage: %s <server port>\n", argv[0]);
     exit(EXIT_FAILURE);
 }
 
 int main(int argc, char **argv) {
-    if (argc < 3) {
+
+    if (argc < 2) {
         usage(argc, argv);
     }
 
     struct sockaddr_storage storage;
-    if (0 != server_sockaddr_init(argv[1], argv[2], &storage)) {
+ 
+    if (0 != server_sockaddr_init(IP_VERSION, argv[1], &storage)) {
         usage(argc, argv);
     }
 
