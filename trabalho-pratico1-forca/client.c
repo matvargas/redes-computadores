@@ -91,7 +91,8 @@ int main(int argc, char **argv) {
 			break;
 
 		total = 0;
-		scanf("%c", &c);
+		memset(buf, 0, 2);
+		scanf(" %c", &c);
 	}
 	
 	close(s);
