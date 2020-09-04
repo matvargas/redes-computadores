@@ -11,11 +11,44 @@
 #define BUFSZ 1024
 #define IP_VERSION "v4"
 #define HANGMAN "pneumoultramicroscopicossilicovulcanoconiotico"
+#define LOG 1
+#define HINT_FLAG 2
+
+typedef struct occurrences {
+    int occCount;
+    int occIndexes[50];
+} OccStruct;
+;
+
+
 
 void usage(int argc, char **argv) {
     //Sugestão de porta: 51511
     printf("usage: %s <server port>\n", argv[0]);
     exit(EXIT_FAILURE);
+}
+
+OccStruct testCharOccurrences (char charToTest){
+
+    OccStruct occ;
+
+    int a[sizeof(HANGMAN) - 1];
+    memset(occ.occIndexes, -1, 50);
+    occ.occCount = 0; 
+
+    if(LOG) printf("[log] testing char: '%c' on word \n", charToTest);
+
+    for(int i = 0; HANGMAN[i]; i++){
+        if (HANGMAN[i] == charToTest) {
+            if(LOG) printf("[log] Index of occurrence of char: '%c' = %d \n", charToTest, i);
+            occ.occIndexes[occ.occCount] = i;
+            occ.occCount ++;
+        }
+    }
+
+    if(LOG) printf("[log] Occurrences of char: '%c' = %d \n", charToTest, occ.occCount);
+
+    return occ;
 }
 
 int main(int argc, char **argv) {
@@ -82,10 +115,30 @@ int main(int argc, char **argv) {
             logexit("send");
         }
 
-        
-        count = recv(csock, buf, BUFSZ - 1, 0);
-        printf("[msg] %s, %d bytes: %s\n", caddrstr, (int)count, buf);
+        if(LOG) printf("[msg] Game started");
 
+        unsigned long gameCount = sizeof(HANGMAN) - 1;
+        unsigned total = 0;
+        OccStruct occ;
+
+        // while (gameCount > 0) {
+            count = recv(csock, buf + total, 2, 0);
+            total += count;
+
+            if(LOG) printf("[log] received %u bytes\n", total);
+            if(LOG) printf("[log] char received: %c \n", buf[1]);
+
+
+            occ = testCharOccurrences(buf[1]);
+            
+            printf("teste");
+            printf("%d , %d", occ.occCount, occ.occIndexes);
+
+
+            memset(buf, 0, 2);
+            total = 0;
+        // }
+        
         close(csock);
     }
 

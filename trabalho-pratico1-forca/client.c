@@ -12,6 +12,8 @@
 #define BUFSZ 1024
 #define LOG 1
 #define HINT_FLAG 2
+
+
 void usage(int argc, char **argv) {
 	printf("usage: %s <server IP> <server port>\n", argv[0]);
 	printf("example: %s 127.0.0.1 51511\n", argv[0]);
