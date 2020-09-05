@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 
 #define BUFSZ 1024
-#define LOG 1
+#define LOG 0
 #define HINT_FLAG 2
 
 
