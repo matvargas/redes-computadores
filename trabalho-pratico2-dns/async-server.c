@@ -18,6 +18,19 @@ void *connection_handler(void *);
 int main(int argc, char *argv[]) {
     pthread_t thread_id;
     char buffer[254];
+
+    if (argc > 2) {
+        FILE *file;
+        printf("Server will be created using configs on: %s \n", argv[2]);
+        file = fopen(argv[2], "r");
+
+        if(file == NULL){
+            perror("Could not open file");
+            exit(EXIT_FAILURE);
+        }
+
+        fclose(file);
+    }
     
     int port = atoi(argv[1]);
     // create thread for socket 
