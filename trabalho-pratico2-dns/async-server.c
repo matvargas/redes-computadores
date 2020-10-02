@@ -12,10 +12,19 @@
 #include <unistd.h>
 #include <pthread.h> //for threading
 
-//the thread function
+typedef struct {
+    char *hostName;
+    char *ip;
+} host;
+
 void *connection_handler(void *);
 void initServerConfigs(char *configFile);
 void cmdBuilder(char *readBuffer, int charCount);
+int addHostName(host h);
+void listHosts();
+
+int hostCount = 0;
+host Hosts[1000];
 
 int main(int argc, char *argv[]) {
     pthread_t thread_id;
@@ -91,9 +100,15 @@ void cmdBuilder(char *readBuffer, int charCount){
     }
 
     if(strcmp(cmd, "add") == 0){
+
         printf("Add hostname: <%s> and bind to ip: <%s> \n", params[0], params[1]);
-        //TODO
-        //Create add function
+        host h;
+        h.hostName = params[0];
+        h.ip = params[1];
+        if(addHostName(h) == -1) {
+            perror("Unable to add hostname");
+            exit(EXIT_FAILURE);
+        }
     } else if (strcmp(cmd, "search") == 0){
         printf("Search hostname: <%s> \n", params[0]);
         //TODO
@@ -107,6 +122,18 @@ void cmdBuilder(char *readBuffer, int charCount){
         exit(EXIT_FAILURE);
     }
 
+}
+
+int addHostName(host h) {
+    Hosts[hostCount] = h;
+    hostCount ++;
+    return 1;
+}
+
+void listHostNames(){
+    for(int i = 0; i < hostCount; i++){
+        printf("Host #%d: hostname: %s, ip %s", i, Hosts[i].hostName, Hosts[i].ip);
+    }
 }
 
 /*
