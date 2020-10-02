@@ -14,22 +14,15 @@
 
 //the thread function
 void *connection_handler(void *);
+void initServerConfigs(char *configFile);
+void cmdBuilder(char *readBuffer, int charCount);
 
 int main(int argc, char *argv[]) {
     pthread_t thread_id;
     char buffer[254];
 
     if (argc > 2) {
-        FILE *file;
-        printf("Server will be created using configs on: %s \n", argv[2]);
-        file = fopen(argv[2], "r");
-
-        if(file == NULL){
-            perror("Could not open file");
-            exit(EXIT_FAILURE);
-        }
-
-        fclose(file);
+        initServerConfigs(argv[2]);
     }
     
     int port = atoi(argv[1]);
@@ -46,6 +39,74 @@ int main(int argc, char *argv[]) {
     }
 
     return 0;
+}
+
+void initServerConfigs(char *configFile){
+    FILE *file;
+    printf("Server will be created using configs on: %s \n", configFile);
+    file = fopen(configFile, "r");
+
+    if(file == NULL){
+        perror("Could not open file");
+        exit(EXIT_FAILURE);
+    }
+
+    int cmdPos = 0;
+    int charCount = 0;
+    char ch; 
+    char readBuffer[255];
+    memset(readBuffer, '\0', sizeof(readBuffer));
+
+    while((ch = fgetc(file)) != EOF){
+        // printf("Reading %c value %d \n", ch, ch);
+        if(ch == '\n'){
+            cmdBuilder(readBuffer, charCount);
+            charCount = 0;
+            memset(readBuffer, '\0', sizeof(readBuffer));
+        } else {
+            readBuffer[charCount] = ch;
+            charCount ++;
+        }
+    }
+
+    if(charCount != 0)
+        cmdBuilder(readBuffer, charCount);
+
+    fclose(file);
+}
+
+void cmdBuilder(char *readBuffer, int charCount){
+    const char delim[2] = " ";
+    char *token = "init";
+    char *cmd;
+    char *params[2];
+    int paramCount = 0;
+
+    cmd = strtok(readBuffer, delim);
+
+    while( token != NULL ) {
+      token = strtok(NULL, delim);
+      params[paramCount] = token;
+      paramCount ++;
+    }
+
+    if(strcmp(cmd, "add") == 0){
+        printf("Add hostname: <%s> and bind to ip: <%s> \n", params[0], params[1]);
+        //TODO
+        //Create add function
+    } else if (strcmp(cmd, "search") == 0){
+        printf("Search hostname: <%s> \n", params[0]);
+        //TODO
+        //Create search function
+    } else if (strcmp(cmd, "link") == 0){
+        printf("Link ip: <%s> to port <%s>\n", params[0], params[1]);
+        //TODO
+        //Create link function
+    } else {
+        printf("Command: %s, not found \n", cmd);
+        exit(EXIT_FAILURE);
+    }
+
 }
 
 /*
