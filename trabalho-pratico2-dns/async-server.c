@@ -12,19 +12,20 @@
 #include <unistd.h>
 #include <pthread.h> //for threading
 
-typedef struct {
+typedef struct host{
     char *hostName;
     char *ip;
 } host;
 
 int hostCount = 0;
-host hosts[1000];
+host *hosts[1000];
 
 void *connection_handler(void *);
 void initServerConfigs(char *configFile);
 void cmdBuilder(char *readBuffer, int charCount);
-int addHostName(host h);
+int addHostName(host *h);
 void listHosts();
+host *createHost(char *ip, char *hostName);
 
 int main(int argc, char *argv[]) {
 
@@ -51,11 +52,6 @@ int main(int argc, char *argv[]) {
     }
 
     return 0;
-}
-
-void addHost(host h){
-    hosts[0] = h;
-    printf("%s %s", hosts[0].hostName, hosts[0].ip);
 }
 
 void initServerConfigs(char *configFile){
@@ -108,9 +104,11 @@ void cmdBuilder(char *readBuffer, int charCount){
     }
 
     if(strcmp(cmd, "add") == 0){
-        host h;
-        h.hostName = params[0];
-        h.ip = params[1];
+
+        host *h = createHost(params[0], params[1]); 
+
+        printf("%s , %s", h->hostName, h->ip);
+
         if(addHostName(h) == -1) {
             perror("Unable to add hostname");
             exit(EXIT_FAILURE);
@@ -132,14 +130,27 @@ void cmdBuilder(char *readBuffer, int charCount){
 
 }
 
-int addHostName(host h) {
+host *createHost(char *ip, char *hostName){
+    host *h = malloc(sizeof(host));
+
+    h->ip = malloc(strlen(ip));
+    strcpy(h->ip, ip);
+
+    h->hostName = malloc(strlen(hostName));
+    strcpy(h->hostName, hostName);
+
+    return h;
+}
+
+int addHostName(host *h) {
+    printf("Add hostname: <%s> and bind to ip: <%s> \n", h->hostName, h->ip);
     hosts[hostCount] = h;
-    printf("Add hostname: <%s> and bind to ip: <%s> \n", hosts[hostCount].hostName, hosts[hostCount].ip);
+    printf("Add hostname: <%s> and bind to ip: <%s> \n", hosts[hostCount]->hostName, hosts[hostCount]->ip);
     hostCount ++;
 
     printf("This DNS server has now %d hosts \n", hostCount);
     for(int i = 0; i < hostCount; i++){
-        printf("hostname: %s, ip %s \n", hosts[i].hostName, hosts[i].ip);
+        printf("hostname: %s, ip %s \n", hosts[i]->hostName, hosts[i]->ip);
     }
 
     return 1;
