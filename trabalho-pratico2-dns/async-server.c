@@ -17,17 +17,18 @@ typedef struct {
     char *ip;
 } host;
 
+int hostCount = 0;
+host hosts[1000];
+
 void *connection_handler(void *);
 void initServerConfigs(char *configFile);
 void cmdBuilder(char *readBuffer, int charCount);
 int addHostName(host h);
 void listHosts();
 
-int hostCount = 0;
-host Hosts[1000];
-
 int main(int argc, char *argv[]) {
-    pthread_t thread_id;
+
+    // pthread_t thread_id;
     char buffer[254];
 
     if (argc > 2) {
@@ -35,19 +36,26 @@ int main(int argc, char *argv[]) {
     }
     
     int port = atoi(argv[1]);
-    // create thread for socket 
-    if (pthread_create(&thread_id, NULL, connection_handler, (void*) port) < 0) {
-        perror("could not create thread");
-        return 1;
-    }
+    // // create thread for socket 
+    // if (pthread_create(&thread_id, NULL, connection_handler, (void*) port) < 0) {
+    //     perror("could not create thread");
+    //     return 1;
+    // }
 
     // continue listening to stdin
     while (1) {
-        gets(buffer);
+        // gets(buffer);
+        scanf(" %s", &buffer);
         printf("Input: %s\n", buffer);
+        cmdBuilder(buffer, 254);
     }
 
     return 0;
+}
+
+void addHost(host h){
+    hosts[0] = h;
+    printf("%s %s", hosts[0].hostName, hosts[0].ip);
 }
 
 void initServerConfigs(char *configFile){
@@ -100,8 +108,6 @@ void cmdBuilder(char *readBuffer, int charCount){
     }
 
     if(strcmp(cmd, "add") == 0){
-
-        printf("Add hostname: <%s> and bind to ip: <%s> \n", params[0], params[1]);
         host h;
         h.hostName = params[0];
         h.ip = params[1];
@@ -117,6 +123,8 @@ void cmdBuilder(char *readBuffer, int charCount){
         printf("Link ip: <%s> to port <%s>\n", params[0], params[1]);
         //TODO
         //Create link function
+    } else if (strcmp(cmd, "list") == 0){
+        listHostNames();
     } else {
         printf("Command: %s, not found \n", cmd);
         exit(EXIT_FAILURE);
@@ -125,15 +133,23 @@ void cmdBuilder(char *readBuffer, int charCount){
 }
 
 int addHostName(host h) {
-    Hosts[hostCount] = h;
+    hosts[hostCount] = h;
+    printf("Add hostname: <%s> and bind to ip: <%s> \n", hosts[hostCount].hostName, hosts[hostCount].ip);
     hostCount ++;
+
+    printf("This DNS server has now %d hosts \n", hostCount);
+    for(int i = 0; i < hostCount; i++){
+        printf("hostname: %s, ip %s \n", hosts[i].hostName, hosts[i].ip);
+    }
+
     return 1;
 }
 
 void listHostNames(){
-    for(int i = 0; i < hostCount; i++){
-        printf("Host #%d: hostname: %s, ip %s", i, Hosts[i].hostName, Hosts[i].ip);
-    }
+    printf("This DNS server has %d hosts \n", hostCount);
+    // for(int i = 0; i < hostCount; i++){
+    //     printf("hostname: %s, ip %s \n", &hosts[i].hostName, &hosts[i].ip);
+    // }
 }
 
 /*
