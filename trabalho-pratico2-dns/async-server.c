@@ -45,8 +45,7 @@ int main(int argc, char *argv[]) {
 
     // continue listening to stdin
     while (1) {
-        // gets(buffer);
-        scanf(" %s", &buffer);
+        gets(buffer);
         printf("Input: %s\n", buffer);
         cmdBuilder(buffer, 254);
     }
@@ -107,8 +106,6 @@ void cmdBuilder(char *readBuffer, int charCount){
 
         host *h = createHost(params[0], params[1]); 
 
-        printf("%s , %s", h->hostName, h->ip);
-
         if(addHostName(h) == -1) {
             perror("Unable to add hostname");
             exit(EXIT_FAILURE);
@@ -130,7 +127,7 @@ void cmdBuilder(char *readBuffer, int charCount){
 
 }
 
-host *createHost(char *ip, char *hostName){
+host *createHost(char *hostName, char *ip){
     host *h = malloc(sizeof(host));
 
     h->ip = malloc(strlen(ip));
@@ -143,24 +140,18 @@ host *createHost(char *ip, char *hostName){
 }
 
 int addHostName(host *h) {
-    printf("Add hostname: <%s> and bind to ip: <%s> \n", h->hostName, h->ip);
     hosts[hostCount] = h;
     printf("Add hostname: <%s> and bind to ip: <%s> \n", hosts[hostCount]->hostName, hosts[hostCount]->ip);
     hostCount ++;
-
-    printf("This DNS server has now %d hosts \n", hostCount);
-    for(int i = 0; i < hostCount; i++){
-        printf("hostname: %s, ip %s \n", hosts[i]->hostName, hosts[i]->ip);
-    }
 
     return 1;
 }
 
 void listHostNames(){
     printf("This DNS server has %d hosts \n", hostCount);
-    // for(int i = 0; i < hostCount; i++){
-    //     printf("hostname: %s, ip %s \n", &hosts[i].hostName, &hosts[i].ip);
-    // }
+    for(int i = 0; i < hostCount; i++){
+        printf("hostname: %s, ip %s \n", hosts[i]->hostName, hosts[i]->ip);
+    }
 }
 
 /*
